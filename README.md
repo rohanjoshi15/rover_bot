@@ -84,3 +84,48 @@ QoS with depth 10 here have over-filled queues
 - Durability Policy: Transient Local
 - History Policy: Keep Last
 - Reliability Policy: Reliable
+
+
+
+
+---
+## Launch FIle 
+This ROS 2 launch file does the following:
+
+1. **Loads robot model**:
+   - Processes a `.xacro` file to generate the URDF robot description.
+
+2. **Starts Gazebo simulation**:
+   - Includes the default Gazebo launch file and loads a custom world.
+
+3. **Spawns the robot in Gazebo**:
+   - Uses `spawn_entity.py` to insert the robot using the robot description.
+
+4. **Publishes robot state**:
+   - Starts `robot_state_publisher` to publish joint and TF data from URDF.
+   - Optionally runs `joint_state_publisher` (though it’s not added to the launch list).
+
+5. **Starts RViz2**:
+   - Opens RViz with a predefined config file for visualizing the robot and data.
+
+
+---
+Open another terminal 
+---
+
+Launch the file from the rover_controller package
+
+This launch file starts the control logic nodes of the rover:
+
+1. **`lidar_processor_node`**:
+   - Subscribes to `/scan` (LaserScan)
+   - Publishes the minimum distance as a `Float32` to `/min_distance`  Here float32 is for precision 
+Also logic could be like taking the middle value from the array of values the lidar provides
+
+2. **`proximity_warning_node`**:
+   - Subscribes to `/min_distance`
+   - Publishes a warning message (like `'STOP'`) to `/proximity_warning` if the distance is too small
+
+3. **`emergency_stop_node`**:
+   - Subscribes to `/proximity_warning`
+   - Sends a zero-velocity `Twist` message to `/cmd_vel` to stop the robot when `'STOP'`
